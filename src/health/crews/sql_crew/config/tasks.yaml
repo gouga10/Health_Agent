@@ -1,0 +1,13 @@
+extract_data  :
+  description: >
+    Extract data that is required for the query {query}
+  expected_output: >
+    Database result for the query
+  agent: sql_developer
+
+analyze_data:
+  description: >
+    Review the context you got about Bobby and report it
+  expected_output: >
+    A fully fledged report 
+  agent: reporting_analyst
