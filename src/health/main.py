@@ -1,33 +1,14 @@
 #!/usr/bin/env python
-from random import randint
-from pydantic import BaseModel
 from crewai.flow.flow import Flow, listen, start ,router ,or_
 from dotenv import load_dotenv
 from litellm import completion
-from langchain_openai import ChatOpenAI
-import json
 import os
-from langchain_community.tools.sql_database.tool import QuerySQLCheckerTool
 from langchain_community.utilities.sql_database import SQLDatabase
 from langchain_community.tools.sql_database.tool import QuerySQLDatabaseTool
 load_dotenv()
 
-
-
-
-
-
 db = SQLDatabase.from_uri("sqlite:///database.db")
-# llm = ChatOpenAI(
-# temperature=0, 
-# model="gpt-4o-mini",  
-# api_key=os.getenv("OPENAI_API_KEY")
-# )
-#check_SQL= QuerySQLCheckerTool(db=db, llm=llm)
 execute_sql = QuerySQLDatabaseTool(db=db, return_direct=True)
-
-
-
 
 
 def query_SQL_DB(reformulated_user_question,model):
@@ -59,13 +40,11 @@ def query_SQL_DB(reformulated_user_question,model):
     
     Query = generate(reformulated_user_question,model)
     print('Reformulated query',Query)
-    #Query=check_SQL.invoke(Query)
     try :
         response=execute_sql.invoke(str(Query).split("###",2)[1])
         return response
     except:
         Query = generate(reformulated_user_question,model)
-        #Query=check_SQL.invoke(Query)
         response=execute_sql.invoke(str(Query).split("###",2)[1])
         return response
         
