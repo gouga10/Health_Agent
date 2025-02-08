@@ -63,27 +63,24 @@ def reformulate_NL_question(conv, model):
                 messages=[
             {
                 "role": "user",
-                "content": f""" You are a Data specialist working in a medical data institution , you are doing a conversation with a medical professionl,the conversation history going as follows : {conv},
-                
-                you have to understand and reformulate only the last question to include as much information as possible from the conversation in order to make it more clear and precise to query the database .
-                this is the schema of the table you are working with :NAME, AGE, GENDER, BLOOD_TYPE, MEDICAL_CONDITION, DATE_OF_ADMISSION, DOCTOR, HOSPITAL, INSURANCE_PROVIDER, BILLING_AMOUNT, ROOM_NUMBER, ADMISSION_TYPE, DISCHARGE_DATE, MEDICATION, TEST_RESULTS
-
-                The user might ask about unrelated things, you have to understand and reformulate only the last question
-                
-                """,
+                "content": f""" You are a Data specialist working in a medical data institution , 
+                this is the schema of the database you are working with :NAME, AGE, GENDER, BLOOD_TYPE, MEDICAL_CONDITION, DATE_OF_ADMISSION, DOCTOR, HOSPITAL, INSURANCE_PROVIDER, BILLING_AMOUNT, ROOM_NUMBER, ADMISSION_TYPE, DISCHARGE_DATE, MEDICATION, TEST_RESULTS
+                you are doing a conversation with a medical professionl,the conversation is going as follows : {conv},
+                you have to understand and reformulate only the last question and \ include relevant information from the conversation if mentioned explicitly in order to make it more clear and precise to query the database .
+                Do not make up details that are not in the conversation
+                The user might ask about unrelated things successively, you have to understand and reformulate only the last question """,
             },
         ],
     )["choices"][0]["message"]["content"]
     return reformulation
 
-def check_end(user_followup, model, conv):
+def check_end( model, conv):
     response = completion(
         model=model,
             api_key='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',        messages=[
             {
                 "role": "user",
                 "content": f""" You are working in a medical data institution ,you are doing a conversation with a medical professionl,the conversation history going as follows : {conv}
-                then the user said {user_followup}
 
                 Based on the last message you decide if he wants more information or not
 
@@ -107,40 +104,51 @@ class ExampleFlow(Flow):
     model = "gpt-4o-mini"
     
     @start()
-    def first_query(self):
-        
-        
-        reformulated_user_question = reformulate_NL_question(self.conv,self.model)
-        gathered_response = query_SQL_DB(reformulated_user_question, 'o3-mini')
-        return gathered_response
+    def check_end(self):
+        return check_end(self.model,self.conv)
     
+    
+    
+    @listen(check_end)
+    def generate_response(self,check):
+        
+        if check=="more info":
+            reformulated_user_question = reformulate_NL_question(self.conv,self.model)
+            gathered_response = query_SQL_DB(reformulated_user_question, 'o3-mini')
+            return gathered_response
+
+        else:
+            return "end conversation"
 
 
-    @listen(first_query)
-    def generate_customer_response(self, gathered_response):
-        response = completion(
-            model=self.model,
-            api_key='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',            
-            messages=[
-                {
-                    "role": "user",
-                    "content": f""" You are working in a medical data institution ,you are doing a conversation with a medical professionl
-                    you have to the answer the thee following question with the following information 
-                    
-                    {gathered_response}
-                    
+    @listen(generate_response)
+    def finalize_response(self, gathered_response_output):
+        if gathered_response_output!="end conversation":
+            response = completion(
+                model=self.model,
+                api_key='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',            
+                messages=[
+                    {
+                        "role": "user",
+                        "content": f""" You are working in a medical data institution ,you are doing a conversation with a medical professionl
+                        you have to the answer the thee following question with the following information 
+                        
+                        {gathered_response_output}
+                        
 
-                    if the answer has more than one person mention that
-                    Make sure to understand and only answer the last question correctly
-                    do not offer more help
-                    """,
-                },
-            ],
-        )
+                        if the answer has more than one person mention that
+                        Make sure to  only answer the question concisely and correctly , don't use all the information in the response if not necessary
+                        do not offer more help
+                        """,
+                    },
+                ],
+            )
 
-        agent_response = response["choices"][0]["message"]["content"]
-        self.state['response']=agent_response
-        return agent_response
+            agent_response = response["choices"][0]["message"]["content"]
+            self.state['response']=agent_response
+            return agent_response
+        else:   
+            return " If you need any other assistance , let me know"
     
     
 
@@ -165,8 +173,8 @@ def generate(request: ConversationRequest):
     # Extract data from the request
     conv = format_conv(request.conv)
     flow = ExampleFlow(conv=conv)
-    flow.kickoff()
-    return {"response":flow.state['response']} 
+    resp=flow.kickoff()
+    return {"response":resp} 
 
 
 
