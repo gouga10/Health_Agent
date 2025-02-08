@@ -28,9 +28,11 @@ def query_SQL_DB(reformulated_user_question,model):
                         
                         create the necessary SQL query to answer the question
                         make sure to use upper case for all words in the query
-                        always use SELECT *
+                        you can use all types of SQL queries ,when using select try to use SELECT *
                         Respond only with the SQL query in this format 
-                        Query :###SELECT * FROM EMR WHERE NAME = 'EDWARD EDWARDS'###
+                        Query :###SELECT * FROM EMR WHERE NAME = 'EDWARD EDWARDS'### 
+                        Query :###SELECT COUNT(*) AS total_ali FROM people  WHERE name = 'Ali'###
+
                         
                         """,
                     },
@@ -72,23 +74,23 @@ def reformulate_NL_question(conv,model):
 
 
 def check_end(user_followup,model,conv):
-            response=completion(
-            model=model,
-            api_key='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',
-            messages=[
-                {
-                    "role": "user",
-                    "content": f""" You are working in a medical data institution ,you are doing a conversation with a medical professionl,the conversation history going as follows : {conv}
-                    then the user said {user_followup}
+    response=completion(
+    model=model,
+    api_key='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',
+    messages=[
+        {
+            "role": "user",
+            "content": f""" You are working in a medical data institution ,you are doing a conversation with a medical professionl,the conversation history going as follows : {conv}
+            then the user said {user_followup}
 
-                    Based on the last message you decide if he wants more information or not
+            Based on the last message you decide if he wants more information or not
 
-                    You can only answer with "more info" or "end conversation"
-                    """,
-                },
-            ],
-        )
-            return response["choices"][0]["message"]["content"]
+            You can only answer with "more info" or "end conversation"
+            """,
+        },
+    ],
+    )
+    return response["choices"][0]["message"]["content"]
 
 class ExampleFlow(Flow):
     model = "gpt-4o-mini"
@@ -146,8 +148,8 @@ class ExampleFlow(Flow):
                 {
                     "role": "user",
                     "content": f""" You are working in a medical data institution ,you are doing a conversation with a medical professionl,the conversation history going as follows : {self.state['conv']}
-                    you have to the answer the question using the following informatn {sql_context}
-
+                    you have to the answer the question using the following information : {sql_context}
+                    if the answer has more than one person give a small description each one of them
                     only answer the last question 
                     do not offer more help
                     """,
@@ -176,13 +178,8 @@ class ExampleFlow(Flow):
         if 'more' in agent_response.lower() :
             return "more"
         else:
-            check_followup=input("Can i help you with something else ?")
-            if 'more' in check_end(check_followup,self.model,self.state['conv']).lower():
-                self.state['conv']+=(f' / Agent:Can i help you with something else ?')
-                self.state['conv']+=(f' / user:{check_followup}')
-                return "more"
-            else:
-                return "END FLOW"
+            
+            return "END FLOW"
     
 
 
