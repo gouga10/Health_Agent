@@ -1,4 +1,4 @@
-from crewai.flow.flow import Flow, listen, start, router, or_
+from crewai.flow.flow import Flow, listen, start
 from dotenv import load_dotenv
 from litellm import completion
 import os
@@ -22,7 +22,8 @@ def query_SQL_DB(reformulated_user_question, model):
                     you are working with a table called "EMR" with the following schema :
                     Columns names:NAME, AGE, GENDER, BLOOD_TYPE, MEDICAL_CONDITION, DATE_OF_ADMISSION, DOCTOR, HOSPITAL, INSURANCE_PROVIDER, BILLING_AMOUNT, ROOM_NUMBER, ADMISSION_TYPE, DISCHARGE_DATE, MEDICATION, TEST_RESULTS
                     column 1:[('BOBBY JACKSON', '30', 'MALE', 'B-', 'CANCER', '2024-01-31', 'MATTHEW SMITH', 'SONS AND MILLER', 'BLUE CROSS', '18856.2813059782', '328', 'URGENT', '2024-02-02', 'PARACETAMOL', 'NORMAL')]
-                    [('LESLIE TERRY', '62', 'MALE', 'A+', 'OBESITY', '2019-08-20', 'SAMANTHA DAVIES', 'KIM INC', 'MEDICARE', '33643.3272865779', '265', 'EMERGENCY', '2019-08-26', 'IBUPROFEN', 'INCONCLUSIVE')]
+                    column 2:[('LESLIE TERRY', '62', 'MALE', 'A+', 'OBESITY', '2019-08-20', 'SAMANTHA DAVIES', 'KIM INC', 'MEDICARE', '33643.3272865779', '265', 'EMERGENCY', '2019-08-26', 'IBUPROFEN', 'INCONCLUSIVE')]
+                    
                     you are doing a conversation with a medical professionl,and you got this question : {reformulated_user_question},
                     
                     create the necessary SQL query to answer the question
@@ -46,15 +47,14 @@ def query_SQL_DB(reformulated_user_question, model):
     Query = generate(reformulated_user_question, model)
     print('SQL query', Query)
     try:
-        sql_output = execute_sql.invoke(str(Query).split("###", 2)[1])
-        response=f"Question : {reformulated_user_question} \nSQL query : {Query} \n SQL output : {sql_output}"
-        return response
+        response = execute_sql.invoke(str(Query).split("###", 2)[1])
+        print('Response', response)
+        return response,Query
     except:
         Query = generate(reformulated_user_question, model)
-         
-        sql_output= execute_sql.invoke(str(Query).split("###", 2)[1])
-        response=f"Question : {reformulated_user_question} \n SQL query : {Query} \n SQL output : {sql_output}"
-        return response
+        response = execute_sql.invoke(str(Query).split("###", 2)[1])
+        print('Response', response)
+        return response,Query
 
 def reformulate_NL_question(conv, model):
     reformulation = completion(
@@ -109,26 +109,25 @@ class ExampleFlow(Flow):
     @start()
     def first_query(self):
         
-        
         reformulated_user_question = reformulate_NL_question(self.conv,self.model)
-        gathered_response = query_SQL_DB(reformulated_user_question, 'o3-mini')
-        return gathered_response
+        sql_response,query = query_SQL_DB(reformulated_user_question, 'o3-mini')
+        return sql_response,query
     
 
 
     @listen(first_query)
-    def generate_customer_response(self, gathered_response):
+    def generate_customer_response(self, sql_response ,query):
         response = completion(
             model=self.model,
             api_key='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',            
             messages=[
                 {
                     "role": "user",
-                    "content": f""" You are working in a medical data institution ,you are doing a conversation with a medical professionl
-                    you have to the answer the thee following question with the following information 
-                    
-                    {gathered_response}
-                    
+                    "content": f""" You are working in a medical data institution ,you are doing a conversation with a medical professionl,the conversation history going as follows : {self.conv}
+                    you have to the answer the last question using the following sql query and response 
+
+                    SQL query:  {query}
+                    Response: {sql_response}
 
                     if the answer has more than one person mention that
                     Make sure to understand and only answer the last question correctly

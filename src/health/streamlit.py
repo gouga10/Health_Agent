@@ -1,17 +1,5 @@
 import streamlit as st
 import requests
-
-
-from multiprocessing import Queue
-import time
-
-def producer(q,prompt):
-    q.put(prompt)
-        
-
-q = Queue()
-
-
 def get_last_4_messages(conversation):
     # Take the last 4 messages (if available)
     last_msgs = conversation[-4:]
@@ -48,11 +36,11 @@ if prompt := st.chat_input("What is up?"):
 
     # Send user message to local API and get response
     api_url = "http://localhost:8001/generate"
-    payload = {"query": prompt}
+    payload = {"query": prompt,'conv':st.session_state.messages}
     response = requests.post(api_url, json=payload)
 
     if response.status_code == 200:
-        bot_response = response.json().get("response", "Sorry, I couldn't understand that.")
+        bot_response = response.json()["response"]
     else:
         bot_response = "Sorry, there was an error processing your request."
 
