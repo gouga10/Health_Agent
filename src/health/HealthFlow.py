@@ -9,12 +9,12 @@ load_dotenv()
 
 db = SQLDatabase.from_uri("sqlite:///database.db")
 execute_sql = QuerySQLDatabaseTool(db=db, return_direct=True)
-
+api_key= os.getenv("OPENAI_API_KEY")
 def query_SQL_DB(reformulated_user_question, model):
     def generate(reformulated_user_question, model):
         return completion(
             model=model,
-            api_key='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',
+            api_key=api_key,
             messages=[
                 {
                     "role": "user",
@@ -31,11 +31,11 @@ def query_SQL_DB(reformulated_user_question, model):
                     Respond only with the SQL query in the following format 
 
                     Question:how old is ali ?
-                    Query :###SELECT * FROM EMR WHERE NAME = 'ALI'### 
+                    Query :###SELECT * FROM EMR WHERE NAME LIKE 'ALI %'### 
 
                     if question is a count query you can use the following format
-                    Question:how many people are named edward ?
-                    Query :###SELECT COUNT(*) AS TOTAL_EDWARD FROM EMR WHERE name = 'EDWARD'###
+                    Question:how many doctors are named edward ?
+                    Query :###SELECT COUNT(*) AS TOTAL_EDWARD FROM EMR WHERE DOCTOR LIKE 'EDWARD %'###
 
                     
                     """,
@@ -59,16 +59,15 @@ def query_SQL_DB(reformulated_user_question, model):
 def reformulate_NL_question(conv, model):
     reformulation = completion(
         model=model,
-            api_key='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',      
+            api_key=api_key ,     
                 messages=[
             {
                 "role": "user",
                 "content": f""" You are a Data specialist working in a medical data institution , 
                 this is the schema of the database you are working with :NAME, AGE, GENDER, BLOOD_TYPE, MEDICAL_CONDITION, DATE_OF_ADMISSION, DOCTOR, HOSPITAL, INSURANCE_PROVIDER, BILLING_AMOUNT, ROOM_NUMBER, ADMISSION_TYPE, DISCHARGE_DATE, MEDICATION, TEST_RESULTS
                 you are doing a conversation with a medical professionl,the conversation is going as follows : {conv},
-                you have to understand and reformulate only the last question and \ include relevant information from the conversation if mentioned explicitly in order to make it more clear and precise to query the database .
-                Do not make up details that are not in the conversation
-                The user might ask about unrelated things successively, you have to understand and reformulate only the last question """,
+                you have to understand and reformulate only the last question and  include relevant information from the conversation if mentioned explicitly in order to make it more clear and precise to query the database .
+                Do not make up details that are not in the conversation ,The user might ask about unrelated things successively, you have to understand and reformulate only the last question """,
             },
         ],
     )["choices"][0]["message"]["content"]
@@ -77,7 +76,8 @@ def reformulate_NL_question(conv, model):
 def check_end( model, conv):
     response = completion(
         model=model,
-            api_key='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',        messages=[
+            api_key=api_key ,
+           messages=[
             {
                 "role": "user",
                 "content": f""" You are working in a medical data institution ,you are doing a conversation with a medical professionl,the conversation history going as follows : {conv}
@@ -101,7 +101,8 @@ class ExampleFlow(Flow):
         super().__init__()
         self.conv = conv
 
-    model = "gpt-4o-mini"
+    model = api_key= os.getenv("MODEL")
+
     
     @start()
     def check_end(self):
@@ -126,7 +127,7 @@ class ExampleFlow(Flow):
         if gathered_response_output!="end conversation":
             response = completion(
                 model=self.model,
-                api_key='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',            
+                api_key=api_key,            
                 messages=[
                     {
                         "role": "user",
@@ -136,7 +137,7 @@ class ExampleFlow(Flow):
                         {gathered_response_output}
                         
 
-                        if the answer has more than one person mention that
+                        if the answer has more than one person mention that and state their names 
                         Make sure to  only answer the question concisely and correctly , don't use all the information in the response if not necessary
                         do not offer more help
                         """,

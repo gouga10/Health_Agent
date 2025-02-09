@@ -1,0 +1,23 @@
+
+services:
+  agent:
+    build: ./src/health
+    ports:
+      - "8001:8001"
+    networks:
+      - app-network
+    env_file:
+      - .env
+
+  streamlit:
+    build: ./UI
+    ports:
+      - "8501:8501"
+    depends_on:
+      - agent
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

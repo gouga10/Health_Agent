@@ -1,56 +1,81 @@
-# {{crew_name}} Crew
+# Medical Data Querying API
 
-Welcome to the {{crew_name}} Crew project, powered by [crewAI](https://crewai.com). This template is designed to help you set up a multi-agent AI system with ease, leveraging the powerful and flexible framework provided by crewAI. Our goal is to enable your agents to collaborate effectively on complex tasks, maximizing their collective intelligence and capabilities.
+## Overview
+This API enables medical professionals to query a structured medical database using natural language. It reformulates user questions into SQL queries, executes them against an SQLite database, and returns relevant results.
+
+## Features
+- Reformulates natural language questions into SQL queries.
+- Executes queries against a predefined SQLite database containing electronic medical records (EMR).
+- Supports conversational context for refining queries.
+- Uses OpenAI's GPT models via LiteLLM for question reformulation and response generation.
+- Built with FastAPI and Uvicorn for a lightweight and scalable API.
+
+## Technologies Used
+- **FastAPI**: Backend framework for API development.
+- **Uvicorn**: ASGI server for running FastAPI.
+- **SQLite**: Database for medical records.
+- **LiteLLM**: Lightweight interface for OpenAI models.
+- **CrewAI Flow**: Manages conversation flow and decision-making.
+- **LangChain**: SQL database utilities.
 
 ## Installation
+### Prerequisites
+- Python 3.12.8 (recommended)
+- Virtual environment (recommended)
 
-Ensure you have Python >=3.10 <3.13 installed on your system. This project uses [UV](https://docs.astral.sh/uv/) for dependency management and package handling, offering a seamless setup and execution experience.
+### Setup Instructions
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/gouga10/Health_Agent.git
+   ```
+2. Create a virtual environment and activate it:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+   ```
+3. Install dependencies:
+   ```bash
+   cd Health_Agent
+   pip install -r requirements.txt
+   ```
+4. Set up environment variables:
+   Create a `.env` file and add:
+   ```
+   OPEN_AI_API=your_openai_api_key
+   ```
 
-First, if you haven't already, install uv:
-
+## Running the API
+Start the server using Uvicorn:
 ```bash
-pip install uv
+cd src/health
+python HealthFlow.py
 ```
 
-Next, navigate to your project directory and install the dependencies:
-
-(Optional) Lock the dependencies and install them by using the CLI command:
+## Running the Streamlit UI
+Start the server using Uvicorn:
 ```bash
-crewai install
+cd src/health
+streamlit run streamlit.py
 ```
 
-### Customizing
 
-**Add your `OPENAI_API_KEY` into the `.env` file**
 
-- Modify `src/health/config/agents.yaml` to define your agents
-- Modify `src/health/config/tasks.yaml` to define your tasks
-- Modify `src/health/crew.py` to add your own logic, tools and specific args
-- Modify `src/health/main.py` to add custom inputs for your agents and tasks
-
-## Running the Project
-
-To kickstart your crew of AI agents and begin task execution, run this from the root folder of your project:
-
+## Terminal Usage Example
+You can test the API using `curl`:
 ```bash
-crewai run
+curl -X 'POST' \
+  'http://localhost:8001/generate' \
+  -H 'Content-Type: application/json' \
+  -d '{ "conv": [ {"role": "user", "content": "how old is Bobby Jackson"}, {"role": "assistant", "content": "Bobby Jackson is 30 years old"}, {"role": "user", "content": "who is his doctor"} ] }'
 ```
 
-This command initializes the Health Crew, assembling the agents and assigning them tasks as defined in your configuration.
+## Deployment
+To deploy using Docker compose:
 
-This example, unmodified, will run the create a `report.md` file with the output of a research on LLMs in the root folder.
+   ```bash
+   docker compose up -d --build 
+   ```
 
-## Understanding Your Crew
+## License
+This project is licensed under the MIT License.
 
-The Health Crew is composed of multiple AI agents, each with unique roles, goals, and tools. These agents collaborate on a series of tasks, defined in `config/tasks.yaml`, leveraging their collective skills to achieve complex objectives. The `config/agents.yaml` file outlines the capabilities and configurations of each agent in your crew.
-
-## Support
-
-For support, questions, or feedback regarding the {{crew_name}} Crew or crewAI.
-
-- Visit our [documentation](https://docs.crewai.com)
-- Reach out to us through our [GitHub repository](https://github.com/joaomdmoura/crewai)
-- [Join our Discord](https://discord.com/invite/X4JWnZnxPb)
-- [Chat with our docs](https://chatg.pt/DWjSBZn)
-
-Let's create wonders together with the power and simplicity of crewAI.

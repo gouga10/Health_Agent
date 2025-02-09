@@ -27,7 +27,7 @@ if prompt := st.chat_input("What is up?"):
         st.markdown(prompt)
 
     # Send user message to local API and get response
-    api_url = "http://localhost:8001/generate"
+    api_url = "http://agent:8001/generate"
     payload = {"query": prompt,'conv':get_last_4_messages(st.session_state.messages)}
     response = requests.post(api_url, json=payload)
 
