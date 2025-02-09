@@ -76,6 +76,5 @@ To deploy using Docker compose:
    docker compose up -d --build 
    ```
 
-## License
-This project is licensed under the MIT License.
+
 
