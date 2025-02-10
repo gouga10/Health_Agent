@@ -3,10 +3,7 @@
 ## Overview
 This API enables medical professionals to query a structured medical database using natural language. It reformulates user questions into SQL queries, executes them against an SQLite database, and returns relevant results.
 
-<video width="100%" controls>
-  <source src="demo.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+a demo video is available
 
 ## Features
 - Reformulates natural language questions into SQL queries.
