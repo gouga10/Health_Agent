@@ -3,6 +3,10 @@
 ## Overview
 This API enables medical professionals to query a structured medical database using natural language. It reformulates user questions into SQL queries, executes them against an SQLite database, and returns relevant results.
 
+<video width="100%" controls>
+  <source src="demo.webm" type="video/webm">
+  Your browser does not support the video tag.
+</video>
 
 ## Features
 - Reformulates natural language questions into SQL queries.
@@ -45,7 +49,15 @@ This API enables medical professionals to query a structured medical database us
    OPENAI_API_KEY=your_openai_api_key
    ```
 
-## Running the API
+## Deployment
+To deploy using Docker compose:
+
+   ```bash
+   docker compose up -d --build 
+   ```
+
+
+## Running the API in terminal
 Start the server using Uvicorn:
 ```bash
 cd src/health
@@ -69,13 +81,3 @@ curl -X 'POST' \
   -H 'Content-Type: application/json' \
   -d '{ "conv": [ {"role": "user", "content": "how old is Bobby Jackson"}, {"role": "assistant", "content": "Bobby Jackson is 30 years old"}, {"role": "user", "content": "who is his doctor"} ] }'
 ```
-
-## Deployment
-To deploy using Docker compose:
-
-   ```bash
-   docker compose up -d --build 
-   ```
-
-
-
