@@ -41,8 +41,9 @@ a demo video is available
    pip install -r requirements.txt
    ```
 4. Set up environment variables:
-   edit the `.env` file and add:
+   create the `.env` file at root and add:
    ```
+   MODEL=gpt-4o-mini
    OPENAI_API_KEY=your_openai_api_key
    ```
 
