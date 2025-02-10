@@ -3,6 +3,7 @@
 ## Overview
 This API enables medical professionals to query a structured medical database using natural language. It reformulates user questions into SQL queries, executes them against an SQLite database, and returns relevant results.
 
+
 ## Features
 - Reformulates natural language questions into SQL queries.
 - Executes queries against a predefined SQLite database containing electronic medical records (EMR).
@@ -39,9 +40,9 @@ This API enables medical professionals to query a structured medical database us
    pip install -r requirements.txt
    ```
 4. Set up environment variables:
-   Create a `.env` file and add:
+   edit the `.env` file and add:
    ```
-   OPEN_AI_API=your_openai_api_key
+   OPENAI_API_KEY=your_openai_api_key
    ```
 
 ## Running the API
