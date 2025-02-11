@@ -123,7 +123,8 @@ class ExampleFlow(Flow):
         super().__init__()
         self.conv = conv
 
-    model = api_key= os.getenv("MODEL")
+    model =os.getenv("MODEL")
+    api_key= os.getenv("OPENAI_API_KEY")
 
 
     # execute when flow starts
@@ -193,6 +194,8 @@ class ConversationRequest(BaseModel):
     conv: List[Dict[str, str]]
 app = FastAPI()
 
+import litellm
+litellm.set_verbose=True
 
 @app.get("/health_check")
 def health_check():
